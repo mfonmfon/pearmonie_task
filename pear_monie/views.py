@@ -15,8 +15,6 @@ def get_token_for_app_users(users):
     return (
         {'refresh': str(refreshToken),
          'access': str(refreshToken.access_token), })
-
-# Create your views here.
 @api_view(['POST'])
 def registerCustomer(customerRegisterRequest):
     email = customerRegisterRequest.get['email']
@@ -26,9 +24,9 @@ def registerCustomer(customerRegisterRequest):
     serializer = CustomerRegistrationSerializer(data=customerRegisterRequest.data)
     if serializer.is_valid():
         customer = Customers.objects.create(
-            first_name=serializer.validated_data['first_name'],
-            last_name=serializer.validated_data['last_name'],
-            phone_number=serializer.validated_data['phone_number'],
+            first_name=validate_customer_first_name(serializer.validated_data['first_name']),
+            last_name= validate_customer_last_name(serializer.validated_data['last_name']),
+            phone_number=validate_customer_phone_number(serializer.validated_data['phone_number']),
             password=make_password(serializer.validated_data['password'])
         )
         app_token = get_token_for_app_users(customer)
@@ -38,12 +36,23 @@ def registerCustomer(customerRegisterRequest):
         )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 def validate_email_is_taken(email):
     if Customers.objects.filter(email=email).exists():
         raise ValueError("Email already exists")
+def validate_customer_phone_number(phone_number):
+    if Customers.objects.filter(phone_number=phone_number).exists():
+        raise ValueError("Phone number already exists")
 
+    if not phone_number and phone_number is None:
+        raise ValueError("Phone number is required")
 
+def validate_customer_first_name(first_name):
+    if not first_name and first_name is None:
+        raise ValueError("First name is required")
+
+def validate_customer_last_name(last_name):
+    if not last_name and last_name is None:
+        raise ValueError("Last name is required")
 def loginCustomers(customerLoginData):
     user_id = customerLoginData.get('id')
     email = customerLoginData.get('email')
