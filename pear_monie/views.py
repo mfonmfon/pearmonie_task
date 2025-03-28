@@ -25,7 +25,7 @@ def registerCustomer(customerRegisterRequest):
     if serializer.is_valid():
         customer = Customers.objects.create(
             first_name=validate_customer_first_name(serializer.validated_data['first_name']),
-            last_name= validate_customer_last_name(serializer.validated_data['last_name']),
+            last_name=validate_customer_last_name(serializer.validated_data['last_name']),
             phone_number=validate_customer_phone_number(serializer.validated_data['phone_number']),
             password=make_password(serializer.validated_data['password'])
         )
@@ -35,7 +35,6 @@ def registerCustomer(customerRegisterRequest):
             status=status.HTTP_201_CREATED
         )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 def validate_email_is_taken(email):
     if Customers.objects.filter(email=email).exists():
         raise ValueError("Email already exists")
@@ -53,10 +52,12 @@ def validate_customer_first_name(first_name):
 def validate_customer_last_name(last_name):
     if not last_name and last_name is None:
         raise ValueError("Last name is required")
+
+@api_view(['POST'])
 def loginCustomers(customerLoginData):
-    user_id = customerLoginData.get('id')
-    email = customerLoginData.get('email')
-    password = customerLoginData.get('password')
+    user_id = customerLoginData.get['id'],
+    email = customerLoginData.get['email'],
+    password = customerLoginData.get['password']
 
     if not user_id or not email or not password:
         return Response({"error": "User ID, email, and password are required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -64,7 +65,7 @@ def loginCustomers(customerLoginData):
     try:
         customer = Customers.objects.get(id=user_id)
     except Customers.DoesNotExist:
-        return Response({"error": "User ID does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "User with this ID does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
     if customer.email != email:
         return Response({"error": "Invalid email or password"}, status=status.HTTP_400_BAD_REQUEST)
